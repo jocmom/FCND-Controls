@@ -69,7 +69,20 @@ VehicleCommand QuadControl::GenerateMotorCommands(float collThrustCmd, V3F momen
   // You'll need the arm length parameter L, and the drag/thrust ratio kappa
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
-
+  // Lesson 11.20: l is a distance between x-axis and propeller location, 
+  // which is equal to half of the distance between neighboring propellers
+  float l = L * M_SQRT1_2;
+  // The rotor positions are swapped (F3/F4) in project versus the 3D lesson!
+  float cBar = collThrustCmd;  // F1 + F2 + F3 + F4
+  float pBar = momentCmd.x / l; // F1 - F2 + F3 - F4
+  float qBar = momentCmd.y / l;  // F1 + F2 - F3 - F4
+  float rBar = -momentCmd.z / kappa; // F1 - F2 - F3 + F4
+    
+  cmd.desiredThrustsN[0] = (cBar + pBar + qBar + rBar) / 4.f; // front left
+  cmd.desiredThrustsN[1] = (cBar - pBar + qBar - rBar) / 4.f; // front right
+  cmd.desiredThrustsN[2] = (cBar + pBar - qBar - rBar) / 4.f; // rear left
+  cmd.desiredThrustsN[3] = (cBar - pBar - qBar + rBar) / 4.f; // rear right
+  
   cmd.desiredThrustsN[0] = mass * 9.81f / 4.f; // front left
   cmd.desiredThrustsN[1] = mass * 9.81f / 4.f; // front right
   cmd.desiredThrustsN[2] = mass * 9.81f / 4.f; // rear left
