@@ -205,6 +205,7 @@ float QuadControl::AltitudeControl(float posZCmd, float velZCmd, float posZ, flo
   thrust = (u1Bar - CONST_GRAVITY) / R(2,2);
   thrust = CONSTRAIN(thrust, -maxAscentRate / dt, maxDescentRate / dt);
   thrust = - mass * thrust;
+  // there is an CONSTRAIN in RunControl() to clip thrust 
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
   
