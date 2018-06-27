@@ -114,8 +114,8 @@ V3F QuadControl::BodyRateControl(V3F pqrCmd, V3F pqr)
   V3F Ixyz = V3F(Ixx, Iyy, Izz);
 
   V3F pqrErr = pqrCmd - pqr;
-  V3F pqrDot = kpPQR * pqrErr;
-  momentCmd = Ixyz * pqrDot; 
+  V3F pTerm = kpPQR * pqrErr;
+  momentCmd = Ixyz * pTerm; 
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
@@ -158,10 +158,10 @@ V3F QuadControl::RollPitchControl(V3F accelCmd, Quaternion<float> attitude, floa
   V3F bcTarget = V3F(bxcTarget, bycTarget, 0);
   V3F bcActual = V3F(R(0,2), R(1,2), 0); // R13, R23
   V3F bcErr = bcTarget - bcActual;
-  V3F bcDot = kpBank * bcErr;
+  V3F pTerm = kpBank * bcErr;
 
-  pqrCmd.x = (R(1,0) * bcDot.x - R(0,0) * bcDot.y) / R(2,2);
-  pqrCmd.y = (R(1,1) * bcDot.x - R(0,1) * bcDot.y) / R(2,2);  
+  pqrCmd.x = (R(1,0) * pTerm.x - R(0,0) * pTerm.y) / R(2,2);
+  pqrCmd.y = (R(1,1) * pTerm.x - R(0,1) * pTerm.y) / R(2,2);  
   
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
@@ -192,8 +192,10 @@ float QuadControl::AltitudeControl(float posZCmd, float velZCmd, float posZ, flo
   float thrust = 0;
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
-
-
+  
+  float zErr = posZCmd - posZ;
+  float zErrDot = velZCmd - velZ;
+  integratedAltitudeError += zErr * dt;
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
   
