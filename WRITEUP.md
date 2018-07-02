@@ -43,7 +43,7 @@ Steps to accomplish this:
 
 1. Implement body rate control
 
- - In `GenerateMotorCommands()` following equations are implemented and the desired thrusts for each rotor are calculated.
+ - In `GenerateMotorCommands()` following equations are implemented and the desired thrusts for each rotor are calculated. Note that F3 and F4 are swapped compared to lessons.
 
  ![Forces and Torques](./images/forces_torques.png)
 
@@ -58,7 +58,11 @@ If you come back to this step after the next step, you can try tuning just the b
 2. Implement roll / pitch control
 We won't be worrying about yaw just yet.
 
- - implement the code in the function `RollPitchControl()`
+ - In the function `RollPitchControl()` again a simple P controller is implemented to control lateral acceleration. The inputs for this functions are the commanded accelerations in the x and y direction and the desired collective thrust. These inputs are translated to elements in the rotation matrix and used for the p controller. 
+ ![bxy Transformation](./images/b_xy_transform.png)  
+ As outputs we need roll and pitch rates, so we need to apply the following equation:
+ ![pq Outputs](./images/p_q_transform.png)
+
  - Tune `kpBank` in `QuadControlParams.txt` to minimize settling time but avoid too much overshoot
 
 If successful you should now see the quad level itself (as shown below), though it’ll still be flying away slowly since we’re not controlling velocity/position!  You should also see the vehicle angle (Roll) get controlled to 0.
@@ -72,8 +76,8 @@ If successful you should now see the quad level itself (as shown below), though 
 
 Next, you will implement the position, altitude and yaw control for your quad.  For the simulation, you will use `Scenario 3`.  This will create 2 identical quads, one offset from its target point (but initialized with yaw = 0) and second offset from target point but yaw = 45 degrees.
 
- - implement the code in the function `LateralPositionControl()`
- - implement the code in the function `AltitudeControl()`
+ - In `LateralPositionControl()` a feedforward PD controller is implemented to output an acceleration command based on position and velocity. 
+ - The `AltitudeControl()` function implements PID controller 
  - tune parameters `kpPosZ` and `kpPosZ`
  - tune parameters `kpVelXY` and `kpVelZ`
 
