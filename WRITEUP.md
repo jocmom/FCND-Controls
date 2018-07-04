@@ -8,7 +8,7 @@ The inputs/outputs differs slightly from the lessons.
 
 ### Intro (scenario 1) ###
 
-It the mass of the quadcopter is not set correctly in `QuadControlParams.txt` the copter either falls down or rise up. This is due to the fact that the thrusts are simply being set to:
+If the mass of the quadcopter is not set correctly in `QuadControlParams.txt` the copter either falls down or rise up. This is due to the fact that the thrusts are simply being set to:
 
 ```
 QuadControlParams.Mass * 9.81 / 4
