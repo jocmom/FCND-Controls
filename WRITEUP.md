@@ -1,12 +1,10 @@
 # Quadcopter Controller in C++ Writeup #
 ### Project 3 of the Udacity Flying Car Nanodegree ###
 
-This is the readme for the C++ project.
+This is the readme for the C++ project and describes the implementation of a cascaded PID controller for a quadcopter simulation. The following figure describes the controller architecture:
 
-For easy navigation throughout this document, here is an outline:
-
- - [The tasks](#the-tasks)
- - [Evaluation](#evaluation)
+![Controller architecture](./images/controller_architecture_new.png)
+The inputs/outputs differs slightly from the lessons.
 
 ### The Code ###
 
@@ -63,9 +61,9 @@ We won't be worrying about yaw just yet.
  As outputs we need roll and pitch rates, so we need to apply the following equation:
  ![pq Outputs](./images/p_q_transform.png)
 
- - Tune `kpBank` in `QuadControlParams.txt` to minimize settling time but avoid too much overshoot
+ - Tuned `kpBank` in `QuadControlParams.txt` to minimize settling time but avoid too much overshoot
 
-If successful you should now see the quad level itself (as shown below), though it’ll still be flying away slowly since we’re not controlling velocity/position!  You should also see the vehicle angle (Roll) get controlled to 0.
+After tuning the parameters the quad levels itself (as shown below), though it’ll still be flying away slowly since we’re not controlling velocity/position! The vehicle angle (Roll) get controlled to 0 as well.
 
 <p align="center">
 <img src="animations/scenario2.gif" width="500"/>
@@ -74,17 +72,19 @@ If successful you should now see the quad level itself (as shown below), though 
 
 ### Position/velocity and yaw angle control (scenario 3) ###
 
-Next, you will implement the position, altitude and yaw control for your quad.  For the simulation, you will use `Scenario 3`.  This will create 2 identical quads, one offset from its target point (but initialized with yaw = 0) and second offset from target point but yaw = 45 degrees.
+In scenario 3 two identical quads, one offset from its target point (but initialized with yaw = 0) and second offset from target point but yaw = 45 degrees, have to be controlled. 
 
- - In `LateralPositionControl()` a feedforward PD controller is implemented to output an acceleration command based on position and velocity. 
- - The `AltitudeControl()` function implements PID controller 
- - tune parameters `kpPosZ` and `kpPosZ`
- - tune parameters `kpVelXY` and `kpVelZ`
+ - In `LateralPositionControl()` a feedforward PD controller is implemented to output an acceleration command based on position and velocity. No transformations have to be done here but the velocity and acceleration commands are checked for feasibility.
+ - The `AltitudeControl()` function implements a PID controller. Here the math for this controller 
+ ![Altitude Math](./images/altitude_control.png)
+ 
+ - Tuned parameters `kpPosZ` and `kpPosZ`
+ - Tuned parameters `kpVelXY` and `kpVelZ`
 
-If successful, the quads should be going to their destination points and tracking error should be going down (as shown below). However, one quad remains rotated in yaw.
+Now the copters are going to their destination points and tracking error is going down (as shown below). However, one quad remains rotated in yaw.
 
- - implement the code in the function `YawControl()`
- - tune parameters `kpYaw` and the 3rd (z) component of `kpPQR`
+ - To fix this the `YawControl()` function implements a P controller for the actual/commanded yaw. Attention has to be paid to unwrap the radian angle in the yaw command and error. 
+ - Tune parameters `kpYaw` and the 3rd (z) component of `kpPQR`
 
 Tune position control for settling time. Don’t try to tune yaw control too tightly, as yaw control requires a lot of control authority from a quadcopter and can really affect other degrees of freedom.  This is why you often see quadcopters with tilted motors, better yaw authority!
 
@@ -96,82 +96,20 @@ Tune position control for settling time. Don’t try to tune yaw control too tig
 
 ### Non-idealities and robustness (scenario 4) ###
 
-In this part, we will explore some of the non-idealities and robustness of a controller.  For this simulation, we will use `Scenario 4`.  This is a configuration with 3 quads that are all are trying to move one meter forward.  However, this time, these quads are all a bit different:
+After tuning each controller for itself and in a perfect world, now we explore some of the non-idealities and robustness of the controllers.  For this simulation, we will use `Scenario 4`.  This is a configuration with 3 quads that are all are trying to move one meter forward.  However, this time, these quads are all a bit different:
  - The green quad has its center of mass shifted back
  - The orange vehicle is an ideal quad
  - The red vehicle is heavier than usual
 
-1. Run your controller & parameter set from Step 3.  Do all the quads seem to be moving OK?  If not, try to tweak the controller parameters to work for all 3 (tip: relax the controller).
-
-2. Edit `AltitudeControl()` to add basic integral control to help with the different-mass vehicle.
-
-3. Tune the integral control, and other control parameters until all the quads successfully move properly.  Your drones' motion should look like this:
+At first place the movement of the copters didn't look right and the parameters had to be tuned again and actually here the integral part of the altitude controller (see section above) was added to handle residual errors
 
 <p align="center">
 <img src="animations/scenario4.gif" width="500"/>
 </p>
 
+### Tracking trajectories (scenario 5) ###
 
-### Tracking trajectories ###
-
-Now that we have all the working parts of a controller, you will put it all together and test it's performance once again on a trajectory.  For this simulation, you will use `Scenario 5`.  This scenario has two quadcopters:
- - the orange one is following `traj/FigureEight.txt`
- - the other one is following `traj/FigureEightFF.txt` - for now this is the same trajectory.  For those interested in seeing how you might be able to improve the performance of your drone by adjusting how the trajectory is defined, check out **Extra Challenge 1** below!
-
-How well is your drone able to follow the trajectory?  It is able to hold to the path fairly well?
-
-
-### Extra Challenge 1 (Optional) ###
-
-You will notice that initially these two trajectories are the same. Let's work on improving some performance of the trajectory itself.
-
-1. Inspect the python script `traj/MakePeriodicTrajectory.py`.  Can you figure out a way to generate a trajectory that has velocity (not just position) information?
-
-2. Generate a new `FigureEightFF.txt` that has velocity terms
-Did the velocity-specified trajectory make a difference? Why?
-
-With the two different trajectories, your drones' motions should look like this:
-
-<p align="center">
-<img src="animations/scenario5.gif" width="500"/>
-</p>
-
-
-### Extra Challenge 2 (Optional) ###
-
-For flying a trajectory, is there a way to provide even more information for even better tracking?
-
-How about trying to fly this trajectory as quickly as possible (but within following threshold)!
-
-
-## Evaluation ##
-
-To assist with tuning of your controller, the simulator contains real time performance evaluation.  We have defined a set of performance metrics for each of the scenarios that your controllers must meet for a successful submission.
-
-There are two ways to view the output of the evaluation:
-
- - in the command line, at the end of each simulation loop, a **PASS** or a **FAIL** for each metric being evaluated in that simulation
- - on the plots, once your quad meets the metrics, you will see a green box appear on the plot notifying you of a **PASS**
-
-
-### Performance Metrics ###
-
-The specific performance metrics are as follows:
-
- - scenario 2
-   - roll should less than 0.025 radian of nominal for 0.75 seconds (3/4 of the duration of the loop)
-   - roll rate should less than 2.5 radian/sec for 0.75 seconds
-
- - scenario 3
-   - X position of both drones should be within 0.1 meters of the target for at least 1.25 seconds
-   - Quad2 yaw should be within 0.1 of the target for at least 1 second
-
-
- - scenario 4
-   - position error for all 3 quads should be less than 0.1 meters for at least 1.5 seconds
-
- - scenario 5
-   - position error of the quad should be less than 0.25 meters for at least 3 seconds
+In scenario 5 two quadcopters are following a 8 shaped trajectory. To pass this test the parameters had to be tuned again and the command outputs from the controllers must be constrained, like max thrust and tilt angles.
 
 ## Authors ##
 
