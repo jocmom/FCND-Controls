@@ -66,8 +66,6 @@ Now the copters are going to their destination points and tracking error is goin
  - To fix this the `YawControl()` function implements a P controller for the actual/commanded yaw. Attention has to be paid to unwrap the radian angle in the yaw command and error. 
  - Tune parameters `kpYaw` and the 3rd (z) component of `kpPQR`
 
-Tune position control for settling time. Don’t try to tune yaw control too tightly, as yaw control requires a lot of control authority from a quadcopter and can really affect other degrees of freedom.  This is why you often see quadcopters with tilted motors, better yaw authority!
-
  ![scenario1](./images/scenario3.gif)
 
 ### Non-idealities and robustness (scenario 4) ###
